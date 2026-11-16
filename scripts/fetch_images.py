@@ -68,8 +68,13 @@ def main(csv_path: str) -> None:
         q = row.get("image_search_query", "").strip()
         if not q or row.get("image_source_url"):
             continue
+        # "a | b | c" means: try each search phrase in turn until one finds a free image
+        hit = None
         try:
-            hit = pick_image(q)
+            for alt in [s.strip() for s in q.split("|") if s.strip()]:
+                hit = pick_image(alt)
+                if hit:
+                    break
         except Exception as e:  # network or API hiccup: leave row for the next run
             print(f"! {q}: {e}")
             continue
